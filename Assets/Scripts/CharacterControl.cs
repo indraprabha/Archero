@@ -20,4 +20,14 @@ public class CharacterControl : MonoBehaviour
     {
         
     }
+
+    void Attack(CharacterControl character)
+    {
+        // Shoot at target character
+    }
+
+    void FaceAttack()
+    {
+        // Reduce self health points
+    }
 }

@@ -23,6 +23,7 @@ public class PlayerControl : CharacterControl
         float v = Input.GetAxisRaw("Vertical");
 
         Move(h, v);
+        Turn(h, v);
         Animating(h, v);
     }
 
@@ -35,6 +36,16 @@ public class PlayerControl : CharacterControl
         // Normalize movement in both axes with desired speed
         movement = movement.normalized * speed * Time.deltaTime;
         characterRigidbody.MovePosition(transform.position + movement);
+    }
+
+    // Turn Character towards the direction of user input
+    void Turn (float h, float v)
+    {
+        Vector3 lookVector = new Vector3(h, 0f, v);
+        Quaternion targetRotation = Quaternion.LookRotation(lookVector);
+
+        // smooth rotate from current lookrotation to new one at given speed
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
     }
 
     void Animating(float h, float v)
