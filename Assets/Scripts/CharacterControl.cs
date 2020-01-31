@@ -5,7 +5,7 @@ using UnityEngine;
 public class CharacterControl : MonoBehaviour
 {
     public float speed = 5f;
-    public int characterHealth = 50;
+    public int characterHealth = 100;
     public int arrowsPerShot = 1;
     public int attackPower = 10;
 
@@ -21,13 +21,19 @@ public class CharacterControl : MonoBehaviour
         
     }
 
-    void Attack(CharacterControl character)
+    public virtual void Attack()
     {
         // Shoot at target character
     }
 
-    void FaceAttack()
+    public bool isDead()
     {
-        // Reduce self health points
+        return characterHealth <= 0;
+    }
+
+    protected void SetSkinMaterial(Material mat)
+    {
+        GameObject tank = transform.Find("Model").gameObject;
+        tank.GetComponent<Renderer>().material = mat;
     }
 }

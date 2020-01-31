@@ -1,9 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerControl : CharacterControl
 {
+    public Material hit;
+    public Material notHit;
+    public Slider healthSlider;
+    public float timeBetweenShots = 0.1f;
+    float timer;
+
     Vector3 movement;
     Animator anim;
     Rigidbody characterRigidbody;
@@ -16,6 +23,20 @@ public class PlayerControl : CharacterControl
         characterRigidbody = GetComponent<Rigidbody>();
     }
 
+    private void Update()
+    {
+        // Add the time since Update was last called to the timer.
+        timer += Time.deltaTime;
+
+        SetSkinMaterial(notHit);
+
+        // Attack only if enough time lapsed since last attack
+        if (timer >= timeBetweenShots)
+        {
+            Attack();
+        }
+    }
+
     // FixedUpdate is called on every physics update 
     void FixedUpdate()
     {
@@ -23,7 +44,7 @@ public class PlayerControl : CharacterControl
         float v = Input.GetAxisRaw("Vertical");
 
         Move(h, v);
-        Turn(h, v);
+        Turn();
         Animating(h, v);
     }
 
@@ -39,12 +60,12 @@ public class PlayerControl : CharacterControl
     }
 
     // Turn Character towards the direction of user input
-    void Turn (float h, float v)
+    void Turn ()
     {
-        Vector3 lookVector = new Vector3(h, 0f, v);
-        Quaternion targetRotation = Quaternion.LookRotation(lookVector);
+        // Determine direction of rotation 
+        Quaternion targetRotation = Quaternion.LookRotation(transform.position - movement);
 
-        // smooth rotate from current lookrotation to new one at given speed
+        // Smoothly rotate from current lookrotation to new one at given speed
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
     }
 
@@ -56,4 +77,38 @@ public class PlayerControl : CharacterControl
         anim.SetBool("IsWalking", walking);
     }
 
+    public override void Attack()
+    {
+        // Reset timer
+        timer = 0f;
+
+        RaycastHit hit;
+        EnemyControl[] enemies = FindObjectsOfType<EnemyControl>();
+        foreach (EnemyControl enemy in enemies)
+        {
+            if (!enemy.isDead())
+            {
+                Debug.Log("Attacking enemy with health " + enemy.characterHealth+" hP");
+                if (Physics.Raycast(transform.position, transform.TransformDirection(enemy.transform.position), out hit, Mathf.Infinity))
+                {
+                    enemy.FaceAttack();
+                }
+            }
+        }
+    }
+
+    public void FaceAttack()
+    {
+        SetSkinMaterial(hit);
+        characterHealth -= attackPower;
+
+        // Set the health bar's value to the current health.
+        healthSlider.value = characterHealth;
+        Debug.Log("Player hit! health reduced to " + characterHealth + "hP ");
+
+        if (characterHealth <= 0)
+        {
+            anim.SetTrigger("Dead");
+        }
+    }
 }
