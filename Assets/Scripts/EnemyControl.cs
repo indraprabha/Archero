@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnemyControl : CharacterControl
 {
     public Material hit;
     public Material notHit;
-    public float timeBetweenShots = 0.5f;
+    public float timeBetweenShots = 1f;
+    public float firingRange = 10f;
     float timer;
 
     PlayerControl player;
@@ -47,15 +49,20 @@ public class EnemyControl : CharacterControl
 
         // Turn to look at player
         Quaternion targetRotation = Quaternion.LookRotation(lookVector);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed);
 
         RaycastHit hit;
         if (!player.isDead())
         {
-            Debug.Log("Player alive! Attacking..");
-            if (Physics.Raycast(transform.position, transform.TransformDirection(player.transform.position), out hit, Mathf.Infinity))
+            
+            if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, firingRange))
             {
-                player.FaceAttack();
+                Debug.Log("Object hit: "+hit.collider.name);
+                if (hit.collider.name.Equals(player.name))
+                {
+                    Debug.Log("Player Hit! ");
+                    player.FaceAttack();
+                }
             }
         }
     }
@@ -65,10 +72,11 @@ public class EnemyControl : CharacterControl
         SetSkinMaterial(hit);
 
         characterHealth -= attackPower;
-
+        Debug.Log("Enemy faced Attack! Current health: "+characterHealth+ " Hp");
         if (characterHealth <= 0)
         {
             anim.SetTrigger("Dead");
+            this.enabled = false;
         }
     }
 
